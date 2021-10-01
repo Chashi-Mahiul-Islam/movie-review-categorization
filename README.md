@@ -17,7 +17,7 @@ This is a moview review classifier based on Sentiment RNN. It contains one embed
  
 ## Usage
 ```
-    Style Transfer CL
+    Movie Review Classifier CL
     
     Usage: driver.py [OPTIONS]
     python3 driver.py --text=<text-to-predict>
