@@ -37,6 +37,7 @@ This is a moview review classifier based on Sentiment RNN. It contains one embed
 ## Example
 
 ``` python3 driver.py --train=True --text="Worst movie ever"  ``` 
+
 ``` Negative review detected ```
 
 
