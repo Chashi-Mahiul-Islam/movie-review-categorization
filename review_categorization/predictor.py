@@ -4,6 +4,8 @@ import review_categorization.utils as ut
 
 def predict(net, test_review, vocab2int, sequence_length=200):
     train_on_gpu = torch.cuda.is_available()
+    if train_on_gpu:
+        net.cuda()
     net.eval()
 
     test_ints = ut.tokenize_review(test_review, vocab2int)

@@ -5,17 +5,18 @@ import review_categorization.model_loader as ml
 import review_categorization.trainer as tr
 import review_categorization.tester as ts
 import review_categorization.predictor as p
-
-
-def categorize(rev_path, label_path):
+    
+def categorize(rev_path, label_path, train=False, test=False, predict=True, text="Best Movie Ever"):
     """DATA LOADING"""
     reviews, labels = dl.get_review_with_labels(rev_path, label_path)
 
-    print(reviews[:2000])
-
-    print()
-
-    print(labels[:20])
+# =============================================================================
+#     print(reviews[:2000])
+# 
+#     print()
+# 
+#     print(labels[:20])
+# =============================================================================
 
     """ DATA PRE-PROCESSING """
 
@@ -26,7 +27,9 @@ def categorize(rev_path, label_path):
     # create a list of words
     words = dl.text_to_vocab(all_text)
 
-    print(words[:30])
+# =============================================================================
+#     print(words[:30])
+# =============================================================================
 
     """ ENCODING THE WORDS """
     vocab2int = ut.endcode_words(words)
@@ -36,7 +39,9 @@ def categorize(rev_path, label_path):
     reviews_ints = ut.tokenize(reviews_split, vocab2int)
 
     # testing my code
-    print("First Tokenized review: \n", reviews_ints[:1])
+# =============================================================================
+#     print("First Tokenized review: \n", reviews_ints[:1])
+# =============================================================================
 
     """ ENCODING THE LABELS"""
     encoded_labels = ut.encode_labels(labels)
@@ -50,15 +55,17 @@ def categorize(rev_path, label_path):
     features = ut.pad_features(reviews_ints, seq_length=seq_length)
 
     ## test statements - do not change - ##
-    assert len(features) == len(
-        reviews_ints
-    ), "Your features should have as many rows as reviews."
-    assert (
-        len(features[0]) == seq_length
-    ), "Each feature row should contain seq_length values."
-
-    # print first 10 values of the first 30 batches
-    print(features[:30, :10])
+# =============================================================================
+#     assert len(features) == len(
+#         reviews_ints
+#     ), "Your features should have as many rows as reviews."
+#     assert (
+#         len(features[0]) == seq_length
+#     ), "Each feature row should contain seq_length values."
+# 
+#     # print first 10 values of the first 30 batches
+#     print(features[:30, :10])
+# =============================================================================
 
     """ TRAINING, VALIDATION AND TEST DATASET WITH DATALOADERS """
 
@@ -79,11 +86,13 @@ def categorize(rev_path, label_path):
     dataiter = iter(train_loader)
     sample_x, sample_y = dataiter.next()
 
-    print("Sample input size: ", sample_x.size())  # batch_size, seq_length
-    print("Sample input: \n", sample_x)
-    print()
-    print("Sample label size: ", sample_y.size())  # batch_size
-    print("Sample label: \n", sample_y)
+# =============================================================================
+#     print("Sample input size: ", sample_x.size())  # batch_size, seq_length
+#     print("Sample input: \n", sample_x)
+#     print()
+#     print("Sample label size: ", sample_y.size())  # batch_size
+#     print("Sample label: \n", sample_y)
+# =============================================================================
 
     train_on_gpu = torch.cuda.is_available()
 
@@ -110,12 +119,14 @@ def categorize(rev_path, label_path):
     net = ml.SentimentRNN(vocab_size, output_size, embedding_dim, hidden_dim, n_layers)
 
     print(net)
+    print()
 
     """ TRAINING """
 
     # BCELoss = Binary Cross Entropy Loss for a single Sigmoid output
-
-    tr.train(net, train_loader, val_loader, batch_size)
+    if train:
+        print("Training...")
+        tr.train(net, train_loader, val_loader, batch_size)
 
     """ TESTING """
 
@@ -126,31 +137,13 @@ def categorize(rev_path, label_path):
     """
     # test data performance
     net.load_state_dict(torch.load("lstm_model_movie_review_categorization.pt"))
-    ts.test(net, test_loader, batch_size)
+    if test:
+        print("Testing...")
+        ts.test(net, test_loader, batch_size)
 
     """ INFERENCE """
-
-    test_review_neg = "The worst movie I have seen; acting was terrible and I want my money back. This movie had bad acting and the dialogue was slow."
-
-    test_ints = ut.tokenize_review(test_review_neg, vocab2int)
-    print(test_ints)
-
-    seq_length = 200
-    features = ut.pad_features(test_ints, seq_length)
-
-    print(features)
-
-    feature_tensor = torch.from_numpy(features)
-    print(feature_tensor.size())
-
-    # positive test review
-    test_review_pos = (
-        "This movie had the best acting and the dialogue was so good. I loved it."
-    )
-    test_review_pos = "best movie ever."
-
-    # negative review
-    test_review_neg = "Not a good movie."
-
-    seq_length = 200
-    p.predict(net, test_review_pos, vocab2int, seq_length)
+    if predict:
+        print("Predicting...")
+        print("Review: {}".format(text))
+        seq_length = 200
+        p.predict(net, text, vocab2int, seq_length)
